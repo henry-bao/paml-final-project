@@ -1,7 +1,8 @@
 streamlit
-st_pages
+st-pages==0.4.1
 pandas
 numpy
 matplotlib
 seaborn
 scikit-learn
+plotly
