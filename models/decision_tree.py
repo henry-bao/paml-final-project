@@ -11,10 +11,11 @@ class DecisionTree:
 
     def fit(self, X, y):
         self.classes_ = np.unique(y)
+        self.num_classes_ = len(self.classes_)
         self.tree = self._build_tree(X, y)
 
     def predict(self, X):
-        return np.array([self._traverse_tree(x, self.tree) for x in X])
+        return np.array([self.classes_[self._traverse_tree(x, self.tree)] for x in X])
 
     def predict_proba(self, X):
         return np.array([self._traverse_tree_proba(x, self.tree) for x in X])
@@ -24,7 +25,12 @@ class DecisionTree:
 
         # Base case: Leaf node (return class distribution as probabilities)
         if depth == self.max_depth or num_labels == 1 or len(y) == 0:
-            leaf_distribution = np.bincount(y, minlength=len(self.classes_)) / len(y)
+            leaf_distribution = np.zeros(self.num_classes_)
+            if len(y) > 0:
+                unique_classes, counts = np.unique(y, return_counts=True)
+                leaf_distribution[np.searchsorted(self.classes_, unique_classes)] = (
+                    counts / len(y)
+                )
             return {"leaf": True, "class_distribution": leaf_distribution}
 
         best_feature, best_threshold = self._find_best_split(X, y)
