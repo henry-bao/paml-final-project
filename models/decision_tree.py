@@ -2,21 +2,30 @@ import numpy as np
 
 
 class DecisionTree:
-    def __init__(self, max_depth=None):
+    def __init__(
+        self, max_depth=None, feature_sampling_factor=1.0, threshold_sampling_factor=1.0
+    ):
         self.max_depth = max_depth
+        self.feature_sampling_factor = feature_sampling_factor
+        self.threshold_sampling_factor = threshold_sampling_factor
 
     def fit(self, X, y):
+        self.classes_ = np.unique(y)
         self.tree = self._build_tree(X, y)
 
     def predict(self, X):
         return np.array([self._traverse_tree(x, self.tree) for x in X])
 
+    def predict_proba(self, X):
+        return np.array([self._traverse_tree_proba(x, self.tree) for x in X])
+
     def _build_tree(self, X, y, depth=0):
         num_labels = len(np.unique(y))
 
-        # Base cases
-        if depth == self.max_depth or num_labels == 1:
-            return np.argmax(np.bincount(y))
+        # Base case: Leaf node (return class distribution as probabilities)
+        if depth == self.max_depth or num_labels == 1 or len(y) == 0:
+            leaf_distribution = np.bincount(y, minlength=len(self.classes_)) / len(y)
+            return {"leaf": True, "class_distribution": leaf_distribution}
 
         best_feature, best_threshold = self._find_best_split(X, y)
 
@@ -32,6 +41,7 @@ class DecisionTree:
             "threshold": best_threshold,
             "left": left_tree,
             "right": right_tree,
+            "leaf": False,
         }
 
     def _find_best_split(self, X, y):
@@ -39,12 +49,22 @@ class DecisionTree:
         best_feature = None
         best_threshold = None
 
-        _, num_features = X.shape
+        num_samples, num_features = X.shape
+        sampled_features = np.random.choice(
+            num_features,
+            int(self.feature_sampling_factor * num_features),
+            replace=False,
+        )
 
-        for feature in range(num_features):
+        for feature in sampled_features:
             thresholds = np.unique(X[:, feature])
+            sampled_thresholds = np.random.choice(
+                thresholds,
+                int(self.threshold_sampling_factor * len(thresholds)),
+                replace=False,
+            )
 
-            for threshold in thresholds:
+            for threshold in sampled_thresholds:
                 gain = self._calculate_gain(X, y, feature, threshold)
 
                 if gain > best_gain:
@@ -76,6 +96,8 @@ class DecisionTree:
         return gain
 
     def _calculate_entropy(self, y):
+        if len(y) == 0:
+            return 0
         _, counts = np.unique(y, return_counts=True)
         probabilities = counts / len(y)
         entropy = -np.sum(probabilities * np.log2(probabilities + 1e-10))
@@ -83,7 +105,9 @@ class DecisionTree:
         return entropy
 
     def _traverse_tree(self, x, tree):
-        if isinstance(tree, dict):
+        if tree.get("leaf"):
+            return np.argmax(tree["class_distribution"])
+        else:
             feature = tree["feature"]
             threshold = tree["threshold"]
 
@@ -91,5 +115,15 @@ class DecisionTree:
                 return self._traverse_tree(x, tree["left"])
             else:
                 return self._traverse_tree(x, tree["right"])
+
+    def _traverse_tree_proba(self, x, tree):
+        if tree.get("leaf"):
+            return tree["class_distribution"]
         else:
-            return tree
+            feature = tree["feature"]
+            threshold = tree["threshold"]
+
+            if x[feature] <= threshold:
+                return self._traverse_tree_proba(x, tree["left"])
+            else:
+                return self._traverse_tree_proba(x, tree["right"])

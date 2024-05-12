@@ -162,7 +162,8 @@ def preprocess_input_data(new_data):
 
 def choose_model(model_choice):
     if model_choice == "Decision Trees":
-        return None
+        dt_model = joblib.load("models/decision_tree_model.pkl")
+        return dt_model
     elif model_choice == "Random Forest":
         rf_model = joblib.load("models/random_forest_model.pkl")
         return rf_model
@@ -219,7 +220,11 @@ if predict_button:
     ]
 
     features_aligned = preprocess_input_data(features)
-    prediction = model.predict(features_aligned)
+    prediction = model.predict(
+        features_aligned.values
+        if model_choice == "Decision Trees"
+        else features_aligned
+    )
 
     # This part simulates the prediction
     st.markdown(
