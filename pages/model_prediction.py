@@ -22,7 +22,7 @@ st.markdown(
 )
 
 model_choice = st.selectbox(
-    "Select a Model", ["Decision Trees", "Random Forest", "K-Nearest Neighbors"]
+    "Select a Model", ["Decision Trees", "Random Forest", "Naive Bayes"]
 )
 
 st.markdown("### Select Location")
@@ -167,8 +167,9 @@ def choose_model(model_choice):
     elif model_choice == "Random Forest":
         rf_model = joblib.load("models/random_forest_model.pkl")
         return rf_model
-    elif model_choice == "K-Nearest Neighbors":
-        return None
+    elif model_choice == "Naive Bayes":
+        nb_model = joblib.load("models/naive_bayes_model.pkl")
+        return nb_model
 
 
 if predict_button:
