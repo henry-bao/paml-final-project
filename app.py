@@ -21,7 +21,7 @@ def load_csv_with_progress(file_path):
     my_bar = st.progress(0)
     total_rows = sum(1 for _ in open(file_path)) - 1
     processed_rows = 0
-    chunk_size = 1000
+    chunk_size = 200
 
     data = pd.DataFrame()
 
@@ -39,7 +39,7 @@ def load_csv_with_progress(file_path):
 df = None
 
 if "df" not in st.session_state:
-    df = load_csv_with_progress("./data/US_Accidents_March23_sample.csv")
+    df = load_csv_with_progress("./data/US_Accidents_March23_random_sample.csv")
     st.session_state["df"] = df
 else:
     df = st.session_state["df"]

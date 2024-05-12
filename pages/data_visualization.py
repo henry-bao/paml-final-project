@@ -7,7 +7,7 @@ from st_pages import add_page_title
 add_page_title()
 
 if "df" not in st.session_state:
-    st.markdown(f"⚠️ Data not loaded. Please go to the [Home page](/) to load the data.")
+    st.markdown("⚠️ Data not loaded. Please go to the [Home page](/) to load the data.")
     st.stop()
 
 
