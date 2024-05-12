@@ -37,11 +37,16 @@ year_slider = st.slider(
 )
 total_accidents = df[df["Year"] == year_slider]["ID"].count()
 average_severity = df[df["Year"] == year_slider]["Severity"].mean()
-top_cities = df[df["Year"] == year_slider]["City"].value_counts().head(5)
+top_cities = df[df["Year"] == year_slider]["City"].value_counts()
 st.markdown(f"#### Total accidents in {year_slider}: _{total_accidents}_")
 st.markdown(f"#### Average severity in {year_slider}: _{average_severity:.2f}_")
-st.markdown("#### Top 5 cities with the most accidents:")
-for i, (city, count) in enumerate(top_cities.items()):
+st.info("Top 5 cities with the **most** accidents:")
+for i, (city, count) in enumerate(top_cities.head(5).items()):
+    st.markdown(
+        f"{i + 1}. **{city}** - {count} accidents - {count / total_accidents * 100:.2f}% of total accidents - average severity: {df[df['City'] == city]['Severity'].mean():.2f}"
+    )
+st.info("Top 5 cities with the **least** accidents:")
+for i, (city, count) in enumerate(top_cities.tail(5).items()):
     st.markdown(
         f"{i + 1}. **{city}** - {count} accidents - {count / total_accidents * 100:.2f}% of total accidents - average severity: {df[df['City'] == city]['Severity'].mean():.2f}"
     )

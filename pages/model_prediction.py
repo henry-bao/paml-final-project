@@ -222,9 +222,10 @@ if predict_button:
     prediction = model.predict(features_aligned)
 
     # This part simulates the prediction
-    st.success(
-        f"If an accident were to happen under these conditions, the predicted severity would be: **{prediction[0]}**"
+    st.markdown(
+        "If an accident were to happen under these conditions, the predicted severity would be:"
     )
-    st.info(
-        "Note: the severity is a number between 1 and 4, where 1 is the least severe and 4 is the most severe"
+    st.success(f"**{prediction[0]}** out of 4")
+    st.markdown(
+        "_Note: the severity is a number between 1 and 4, where 1 is the least severe and 4 is the most severe_"
     )
