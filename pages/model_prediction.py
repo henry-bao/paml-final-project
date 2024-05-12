@@ -227,11 +227,13 @@ if predict_button:
         else features_aligned
     )
 
+    severity_map = {1: "Low Impact", 2: "Minor", 3: "Moderate", 4: "Serious"}
+
     # This part simulates the prediction
     st.markdown(
         "If an accident were to happen under these conditions, the predicted severity would be:"
     )
-    st.success(f"**{prediction[0]}** out of 4")
+    st.success(f"{severity_map[prediction[0]]} (**{prediction[0]}** out of 4 severity)")
     st.markdown(
         "_Note: the severity is a number between 1 and 4, where 1 is the least severe and 4 is the most severe_"
     )
