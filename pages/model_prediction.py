@@ -1,11 +1,17 @@
 import streamlit as st
 from st_pages import add_page_title
+import joblib
+import numpy as np
+
+from models.decision_tree import DecisionTree
 
 add_page_title()
 
 if "df" not in st.session_state:
-    st.markdown(f"⚠️ Data not loaded. Please go to the [Home page](/) to load the data.")
+    st.markdown("⚠️ Data not loaded. Please go to the [Home page](/) to load the data.")
     st.stop()("⚠️ Data not loaded. Please go to the Home page to load the data.")
+
+dt_model = joblib.load("models/decision_tree_model.pkl")
 
 st.markdown(
     "This section allows you to predict accident severity by selecting a model and entering relevant data."
@@ -14,6 +20,9 @@ st.markdown(
 model_choice = st.selectbox(
     "Select a model", ["Decision Trees", "Random Forest", "K-Nearest Neighbors"]
 )
+
+# Time
+st.write("### Enter the Features for Prediction")
 
 # Input fields for features
 feature1 = st.number_input(
@@ -30,21 +39,27 @@ feature3 = st.number_input(
 predict_button = st.button("Predict Severity")
 
 if predict_button:
+    features = np.array(
+        [[feature1, feature2, feature3]]
+    )  # Adjust the array shape according to your model's requirements
+    prediction = dt_model.predict(features)
+
     # This part simulates the prediction
     st.success(f"Model {model_choice} would predict severity here based on inputs.")
     st.info(f"Feature 1: {feature1}, Feature 2: {feature2}, Feature 3: {feature3}")
     # Optionally, add a placeholder for where actual prediction results would go
     st.write("This is where the prediction result would appear.")
-    # Dummy performance metrics (These would be dynamically calculated with actual model predictions)
-    precision = 0.75  # Example precision value
-    recall = 0.65  # Example recall value
-    f1 = 0.70  # Example F1 score
+    st.write(f"Predicted Severity: {prediction}")
+    # # Dummy performance metrics (These would be dynamically calculated with actual model predictions)
+    # precision = 0.75  # Example precision value
+    # recall = 0.65  # Example recall value
+    # f1 = 0.70  # Example F1 score
 
-    # Displaying the metrics
-    st.write(f"### Performance Metrics for {model_choice} Model")
-    st.write(f"**Precision:** {precision}")
-    st.write(f"**Recall:** {recall}")
-    st.write(f"**F1 Score:** {f1}")
+    # # Displaying the metrics
+    # st.write(f"### Performance Metrics for {model_choice} Model")
+    # st.write(f"**Precision:** {precision}")
+    # st.write(f"**Recall:** {recall}")
+    # st.write(f"**F1 Score:** {f1}")
 
     # If you had a real prediction, you could display it like so:
     # st.write(f"The predicted severity is: {predicted_severity}")

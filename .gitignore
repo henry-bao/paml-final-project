@@ -1,4 +1,4 @@
-models/*
+models/*.pkl
 *.DS_Store
 data/US_Accidents_March23.csv
 
