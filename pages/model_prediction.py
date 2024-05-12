@@ -14,7 +14,6 @@ if "df" not in st.session_state:
     st.markdown("⚠️ Data not loaded. Please go to the [Home page](/) to load the data.")
     st.stop()("⚠️ Data not loaded. Please go to the Home page to load the data.")
 
-rf_model = joblib.load("models/random_forest_model.pkl")
 with open("data/state_city_county.json", "r") as json_file:
     loc_data = json.load(json_file)
 
@@ -31,7 +30,7 @@ st.markdown("### Select Location")
 col1, col2, col3 = st.columns(3)
 with col1:
     state = st.selectbox(
-        "Choose a State:",
+        "State",
         list(loc_data.keys()),
         key="state",
         index=list(loc_data.keys()).index("NY"),
@@ -41,12 +40,15 @@ if state:
     cities = list(loc_data[state].keys())
     with col2:
         city = st.selectbox(
-            "Choose a City:", cities, key="city", index=cities.index("New York")
+            "City",
+            cities,
+            key="city",
+            index=cities.index("New York") if "New York" in cities else 0,
         )
     if city:
         counties = loc_data[state][city]
         with col3:
-            county = st.selectbox("Choose a County:", counties, key="county")
+            county = st.selectbox("County", counties, key="county")
 
 # Time
 st.markdown("### Select Time")
@@ -120,7 +122,7 @@ with col3:
     )
 
 route_features = st.multiselect(
-    "Select Route Features",
+    "Route Features",
     [
         "Amenity",
         "Bump",
@@ -140,6 +142,7 @@ route_features = st.multiselect(
 )
 
 predict_button = st.button("Predict Severity")
+model_columns = joblib.load("models/model_columns.pkl")
 
 
 def has_route_feature(feature):
@@ -150,71 +153,78 @@ def is_weather(w):
     return weather == w
 
 
-# Button to perform prediction
+def preprocess_input_data(new_data):
+    new_data_df = pd.DataFrame(new_data)
+    new_data_dummy = pd.get_dummies(new_data_df, drop_first=True)
+    aligned_data = new_data_dummy.reindex(columns=model_columns.columns, fill_value=0)
+    return aligned_data
+
+
+def choose_model(model_choice):
+    if model_choice == "Decision Trees":
+        return None
+    elif model_choice == "Random Forest":
+        rf_model = joblib.load("models/random_forest_model.pkl")
+        return rf_model
+    elif model_choice == "K-Nearest Neighbors":
+        return None
+
 
 if predict_button:
+    model = choose_model(model_choice)
+    if model is None:
+        st.error("Model not implemented yet.")
+        st.stop()
+
     time_of_day = "Day" if 6 <= hour < 18 else "Night"
-    features = pd.DataFrame(
+    features = [
         {
-            "City": [city],
-            "County": [county],
-            "State": [state],
-            "Temperature(F)": [temperature],
-            "Humidity(%)": [humidity],
-            "Pressure(in)": [pressure],
-            "Visibility(mi)": [visibility],
-            "Wind_Direction": [wind_direction],
-            "Wind_Speed(mph)": [wind_speed],
-            "Precipitation(in)": [precipitation],
-            "Amenity": [has_route_feature("Amenity")],
-            "Bump": [has_route_feature("Bump")],
-            "Crossing": [has_route_feature("Crossing")],
-            "Give_Way": [has_route_feature("Give_Way")],
-            "Junction": [has_route_feature("Junction")],
-            "No_Exit": [has_route_feature("No_Exit")],
-            "Railway": [has_route_feature("Railway")],
-            "Roundabout": [has_route_feature("Roundabout")],
-            "Station": [has_route_feature("Station")],
-            "Stop": [has_route_feature("Stop")],
-            "Traffic_Calming": [has_route_feature("Traffic_Calming")],
-            "Traffic_Signal": [has_route_feature("Traffic_Signal")],
-            "Sunrise_Sunset": [time_of_day],
-            "Civil_Twilight": [time_of_day],
-            "Nautical_Twilight": [time_of_day],
-            "Astronomical_Twilight": [time_of_day],
-            "Clear": [is_weather("Clear")],
-            "Cloud": [is_weather("Cloud")],
-            "Rain": [is_weather("Rain")],
-            "Heavy_Rain": [is_weather("Heavy_Rain")],
-            "Snow": [is_weather("Snow")],
-            "Heavy_Snow": [is_weather("Heavy_Snow")],
-            "Fog": [is_weather("Fog")],
-            "Month": [month],
-            "Weekday": [weekday],
-            "Hour": [hour],
-        },
-        index=[0],  # specify index for the DataFrame
-    )
+            "City": city,
+            "County": county,
+            "State": state,
+            "Temperature(F)": temperature,
+            "Humidity(%)": humidity,
+            "Pressure(in)": pressure,
+            "Visibility(mi)": visibility,
+            "Wind_Direction": wind_direction,
+            "Wind_Speed(mph)": wind_speed,
+            "Precipitation(in)": precipitation,
+            "Amenity": has_route_feature("Amenity"),
+            "Bump": has_route_feature("Bump"),
+            "Crossing": has_route_feature("Crossing"),
+            "Give_Way": has_route_feature("Give_Way"),
+            "Junction": has_route_feature("Junction"),
+            "No_Exit": has_route_feature("No_Exit"),
+            "Railway": has_route_feature("Railway"),
+            "Roundabout": has_route_feature("Roundabout"),
+            "Station": has_route_feature("Station"),
+            "Stop": has_route_feature("Stop"),
+            "Traffic_Calming": has_route_feature("Traffic_Calming"),
+            "Traffic_Signal": has_route_feature("Traffic_Signal"),
+            "Sunrise_Sunset": time_of_day,
+            "Civil_Twilight": time_of_day,
+            "Nautical_Twilight": time_of_day,
+            "Astronomical_Twilight": time_of_day,
+            "Clear": is_weather("Clear"),
+            "Cloud": is_weather("Cloud"),
+            "Rain": is_weather("Rain"),
+            "Heavy_Rain": is_weather("Heavy_Rain"),
+            "Snow": is_weather("Snow"),
+            "Heavy_Snow": is_weather("Heavy_Snow"),
+            "Fog": is_weather("Fog"),
+            "Month": month,
+            "Weekday": weekday,
+            "Hour": hour,
+        }
+    ]
 
-    features_dummy = pd.get_dummies(pd.DataFrame(features, columns=features.columns))
-
-    prediction = rf_model.predict(features_dummy)
+    features_aligned = preprocess_input_data(features)
+    prediction = model.predict(features_aligned)
 
     # This part simulates the prediction
-    st.success(f"Model {model_choice} would predict severity here based on inputs.")
-    # Optionally, add a placeholder for where actual prediction results would go
-    st.write("This is where the prediction result would appear.")
-    st.write(f"Predicted Severity: {prediction}")
-    # # Dummy performance metrics (These would be dynamically calculated with actual model predictions)
-    # precision = 0.75  # Example precision value
-    # recall = 0.65  # Example recall value
-    # f1 = 0.70  # Example F1 score
-
-    # # Displaying the metrics
-    # st.write(f"### Performance Metrics for {model_choice} Model")
-    # st.write(f"**Precision:** {precision}")
-    # st.write(f"**Recall:** {recall}")
-    # st.write(f"**F1 Score:** {f1}")
-
-    # If you had a real prediction, you could display it like so:
-    # st.write(f"The predicted severity is: {predicted_severity}")
+    st.success(
+        f"If an accident were to happen under these conditions, the predicted severity would be: **{prediction[0]}**"
+    )
+    st.info(
+        "Note: the severity is a number between 1 and 4, where 1 is the least severe and 4 is the most severe"
+    )
