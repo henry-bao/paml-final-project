@@ -22,8 +22,72 @@ st.markdown(
 )
 
 model_choice = st.selectbox(
-    "Select a Model", ["Decision Trees", "Random Forest", "Naive Bayes"]
+    "Select Model", ["Decision Trees", "Random Forest", "Naive Bayes"]
 )
+
+st.markdown("Randomize Data (Optional)")
+
+randomize_button = st.button("Randomize")
+
+if randomize_button:
+    st.session_state.state = np.random.choice(list(loc_data.keys()))
+    st.session_state.city = np.random.choice(
+        list(loc_data[st.session_state.state].keys())
+    )
+    st.session_state.county = np.random.choice(
+        loc_data[st.session_state.state][st.session_state.city]
+    )
+    st.session_state.month = np.random.choice(
+        [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+        ]
+    )
+    st.session_state.weekday = np.random.choice(
+        ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    )
+    st.session_state.hour = np.random.choice(list(range(24)))
+    st.session_state.weather = np.random.choice(
+        ["Clear", "Cloud", "Rain", "Heavy_Rain", "Snow", "Heavy_Snow", "Fog"]
+    )
+    st.session_state.wind_direction = np.random.choice(
+        ["S", "NE", "E", "CALM", "N", "SE", "VAR", "SW", "W", "NW"]
+    )
+    st.session_state.wind_speed = np.random.choice(list(range(0, 175, 10)))
+    st.session_state.temperature = np.random.choice(list(range(-35, 160, 5)))
+    st.session_state.humidity = np.random.choice(list(range(0, 100, 5)))
+    st.session_state.visibility = np.random.choice(list(np.arange(0.0, 10.0, 0.5)))
+    st.session_state.pressure = np.random.choice(list(np.arange(15.0, 55.0, 0.5)))
+    st.session_state.precipitation = np.random.choice(list(np.arange(0.0, 10.0, 0.5)))
+    # unset all route features, then randomly set some
+    st.session_state.route_features = []
+    for feature in [
+        "Amenity",
+        "Bump",
+        "Crossing",
+        "Give_Way",
+        "Junction",
+        "No_Exit",
+        "Railway",
+        "Roundabout",
+        "Station",
+        "Stop",
+        "Traffic_Calming",
+        "Traffic_Signal",
+        "Turning_Loop",
+    ]:
+        if np.random.choice([True, False]):
+            st.session_state.route_features.append(feature)
 
 st.markdown("### Select Location")
 
