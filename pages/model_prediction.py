@@ -5,9 +5,6 @@ import numpy as np
 import pandas as pd
 import json
 
-from models.decision_tree import DecisionTree
-from sklearn.ensemble import RandomForestClassifier
-
 add_page_title()
 
 if "df" not in st.session_state:
