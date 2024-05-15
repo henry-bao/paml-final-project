@@ -1,0 +1,13 @@
+version: '3.9'
+
+services:
+  paml-streamlit-app:
+    container_name: paml-streamlit-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./models:/app/models
+    restart: always
