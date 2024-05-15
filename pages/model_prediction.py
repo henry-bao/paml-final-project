@@ -234,67 +234,66 @@ def choose_model(model_choice):
 
 
 if predict_button:
-    model = choose_model(model_choice)
-    if model is None:
-        st.error("Model not implemented yet.")
-        st.stop()
+    with st.spinner("Predicting Severity..."):
+        model = choose_model(model_choice)
+        if model is None:
+            st.error("Model not implemented yet.")
+            st.stop()
 
-    time_of_day = "Day" if 6 <= hour < 18 else "Night"
-    features = [
-        {
-            "City": city,
-            "County": county,
-            "State": state,
-            "Temperature(F)": temperature,
-            "Humidity(%)": humidity,
-            "Pressure(in)": pressure,
-            "Visibility(mi)": visibility,
-            "Wind_Direction": wind_direction,
-            "Wind_Speed(mph)": wind_speed,
-            "Precipitation(in)": precipitation,
-            "Amenity": has_route_feature("Amenity"),
-            "Bump": has_route_feature("Bump"),
-            "Crossing": has_route_feature("Crossing"),
-            "Give_Way": has_route_feature("Give_Way"),
-            "Junction": has_route_feature("Junction"),
-            "No_Exit": has_route_feature("No_Exit"),
-            "Railway": has_route_feature("Railway"),
-            "Roundabout": has_route_feature("Roundabout"),
-            "Station": has_route_feature("Station"),
-            "Stop": has_route_feature("Stop"),
-            "Traffic_Calming": has_route_feature("Traffic_Calming"),
-            "Traffic_Signal": has_route_feature("Traffic_Signal"),
-            "Sunrise_Sunset": time_of_day,
-            "Civil_Twilight": time_of_day,
-            "Nautical_Twilight": time_of_day,
-            "Astronomical_Twilight": time_of_day,
-            "Clear": is_weather("Clear"),
-            "Cloud": is_weather("Cloud"),
-            "Rain": is_weather("Rain"),
-            "Heavy_Rain": is_weather("Heavy_Rain"),
-            "Snow": is_weather("Snow"),
-            "Heavy_Snow": is_weather("Heavy_Snow"),
-            "Fog": is_weather("Fog"),
-            "Month": month,
-            "Weekday": weekday,
-            "Hour": hour,
-        }
-    ]
+        time_of_day = "Day" if 6 <= hour < 18 else "Night"
+        features = [
+            {
+                "City": city,
+                "County": county,
+                "State": state,
+                "Temperature(F)": temperature,
+                "Humidity(%)": humidity,
+                "Pressure(in)": pressure,
+                "Visibility(mi)": visibility,
+                "Wind_Direction": wind_direction,
+                "Wind_Speed(mph)": wind_speed,
+                "Precipitation(in)": precipitation,
+                "Amenity": has_route_feature("Amenity"),
+                "Bump": has_route_feature("Bump"),
+                "Crossing": has_route_feature("Crossing"),
+                "Give_Way": has_route_feature("Give_Way"),
+                "Junction": has_route_feature("Junction"),
+                "No_Exit": has_route_feature("No_Exit"),
+                "Railway": has_route_feature("Railway"),
+                "Roundabout": has_route_feature("Roundabout"),
+                "Station": has_route_feature("Station"),
+                "Stop": has_route_feature("Stop"),
+                "Traffic_Calming": has_route_feature("Traffic_Calming"),
+                "Traffic_Signal": has_route_feature("Traffic_Signal"),
+                "Sunrise_Sunset": time_of_day,
+                "Civil_Twilight": time_of_day,
+                "Nautical_Twilight": time_of_day,
+                "Astronomical_Twilight": time_of_day,
+                "Clear": is_weather("Clear"),
+                "Cloud": is_weather("Cloud"),
+                "Rain": is_weather("Rain"),
+                "Heavy_Rain": is_weather("Heavy_Rain"),
+                "Snow": is_weather("Snow"),
+                "Heavy_Snow": is_weather("Heavy_Snow"),
+                "Fog": is_weather("Fog"),
+                "Month": month,
+                "Weekday": weekday,
+                "Hour": hour,
+            }
+        ]
 
-    features_aligned = preprocess_input_data(features)
-    prediction = model.predict(
-        features_aligned.values
-        if model_choice == "Decision Trees"
-        else features_aligned
-    )
+        features_aligned = preprocess_input_data(features)
+        prediction = model.predict(
+            features_aligned.values
+            if model_choice == "Decision Trees"
+            else features_aligned
+        )
+        severity_map = {1: "Low Impact", 2: "Minor", 3: "Moderate", 4: "Serious"}    
 
-    severity_map = {1: "Low Impact", 2: "Minor", 3: "Moderate", 4: "Serious"}
-
-    # This part simulates the prediction
-    st.markdown(
-        "If an accident were to happen under these conditions, the predicted severity would be:"
-    )
-    st.success(f"{severity_map[prediction[0]]} (**{prediction[0]}** out of 4 severity)")
-    st.markdown(
-        "_Note: the severity is a number between 1 and 4, where 1 is the least severe and 4 is the most severe_"
-    )
+        st.markdown(
+            "If an accident were to happen under these conditions, the predicted severity would be:"
+        )
+        st.success(f"{severity_map[prediction[0]]} (**{prediction[0]}** out of 4 severity)")
+        st.markdown(
+            "_Note: the severity is a number between 1 and 4, where 1 is the least severe and 4 is the most severe_"
+        )
