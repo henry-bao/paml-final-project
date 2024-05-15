@@ -68,3 +68,11 @@ if df is not None:
 
     st.markdown("## Quick Data Preview")
     st.write(df.head(15))
+
+    st.markdown("## Acknowledgements")
+    st.markdown(
+        """
+        - [Kaggle](https://www.kaggle.com/sobhanmoosavi/us-accidents) for the dataset.
+        - [Streamlit](https://streamlit.io) for the amazing app framework.
+    """
+    )
